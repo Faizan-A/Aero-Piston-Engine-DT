@@ -142,7 +142,7 @@ if __name__ == "__main__":
     print("Connecting to backend...")
 
     try:
-        sio.connect("http://localhost:5000")
+        sio.connect("https://aero-piston-engine-dt.onrender.com")
 
         while True:
             engine.update()
