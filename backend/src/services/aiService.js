@@ -3,7 +3,7 @@ const axios = require("axios");
 async function getPrediction(telemetry) {
     try {
         const response = await axios.post(
-            "http://localhost:8000/predict",
+            `${process.env.AI_SERVICE_URL}/predict`,
             telemetry
         );
 
