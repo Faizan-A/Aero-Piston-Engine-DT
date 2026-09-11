@@ -22,6 +22,12 @@ const {
 
 connectDB();
 const app = express();
+
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
+
 app.use(express.json());
 app.use("/api/telemetry", telemetryRoutes);
 const server = http.createServer(app);
@@ -29,6 +35,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "*",
+        methods: ["GET", "POST"]
     },
 });
 

@@ -27,38 +27,58 @@ function App() {
     useEffect(() => {
     const loadHistory = async () => {
     try {
-        const [historyResponse, latestResponse] =
-            await Promise.all([
-                fetch(
-                    `${import.meta.env.VITE_API_URL}/api/telemetry?limit=30`
-                ),
-                fetch(
-                    `${import.meta.env.VITE_API_URL}/api/telemetry/latest`
-                ),
-            ]);
+        // Load latest telemetry FIRST
+        const latestResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/telemetry/latest`
+        );
 
-        const historyData = await historyResponse.json();
+        if (!latestResponse.ok) {
+            throw new Error(
+                `Latest telemetry HTTP ${latestResponse.status}`
+            );
+        }
+
         const latestData = await latestResponse.json();
 
-        if (Array.isArray(historyData)) {
-            const historicalData = historyData.map((item) => ({
-                time: new Date(item.timestamp).toLocaleTimeString(),
-                rpm: item.rpm,
-                cht: item.cht,
-                egt: item.egt,
-                vibration: item.vibration,
-            }));
-
-            setHistory(historicalData);
-        }
+        console.log("Latest telemetry:", latestData);
 
         if (latestData && !latestData.error) {
             setEngine(latestData);
         }
 
+        // Load history separately
+        try {
+            const historyResponse = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/telemetry?limit=30`
+            );
+
+            if (historyResponse.ok) {
+                const historyData = await historyResponse.json();
+
+                if (Array.isArray(historyData)) {
+                    const historicalData = historyData.map((item) => ({
+                        time: new Date(
+                            item.timestamp
+                        ).toLocaleTimeString(),
+                        rpm: item.rpm,
+                        cht: item.cht,
+                        egt: item.egt,
+                        vibration: item.vibration,
+                    }));
+
+                    setHistory(historicalData);
+                }
+            }
+        } catch (historyError) {
+            console.error(
+                "History loading failed:",
+                historyError
+            );
+        }
+
     } catch (error) {
         console.error(
-            "Failed to load telemetry:",
+            "Latest telemetry loading failed:",
             error
         );
     }
