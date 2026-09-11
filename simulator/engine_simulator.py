@@ -123,6 +123,16 @@ def receive_fault(data):
     else:
         engine.set_fault(fault)
 
+    # Send updated telemetry immediately
+    engine.update()
+
+    telemetry = engine.get_telemetry()
+
+    sio.emit("telemetry", telemetry)
+
+    print(f"Fault applied immediately: {fault}")
+    print(json.dumps(telemetry))
+
 
 @sio.on("mission_update")
 def receive_mission(data):
