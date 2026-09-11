@@ -26,14 +26,22 @@ function App() {
 
     useEffect(() => {
     const loadHistory = async () => {
-        try {
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/telemetry?limit=30`
-            );
+    try {
+        const [historyResponse, latestResponse] =
+            await Promise.all([
+                fetch(
+                    `${import.meta.env.VITE_API_URL}/api/telemetry?limit=30`
+                ),
+                fetch(
+                    `${import.meta.env.VITE_API_URL}/api/telemetry/latest`
+                ),
+            ]);
 
-            const data = await response.json();
+        const historyData = await historyResponse.json();
+        const latestData = await latestResponse.json();
 
-            const historicalData = data.map((item) => ({
+        if (Array.isArray(historyData)) {
+            const historicalData = historyData.map((item) => ({
                 time: new Date(item.timestamp).toLocaleTimeString(),
                 rpm: item.rpm,
                 cht: item.cht,
@@ -42,17 +50,19 @@ function App() {
             }));
 
             setHistory(historicalData);
-
-            if (data.length > 0) {
-                setEngine(data[data.length - 1]);
-            }
-        } catch (error) {
-            console.error(
-                "Failed to load historical telemetry:",
-                error
-            );
         }
-    };
+
+        if (latestData && !latestData.error) {
+            setEngine(latestData);
+        }
+
+    } catch (error) {
+        console.error(
+            "Failed to load telemetry:",
+            error
+        );
+    }
+};
 
     loadHistory();
 
